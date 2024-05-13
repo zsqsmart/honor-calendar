@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "lib": ["ES2021", "DOM", "DOM.Iterable"],
+    "types": ["node", "jest"]
+  },
+  "include": ["packages/server/src", "**/*spec.ts"],
+  "exclude": ["**/dist"]
+}

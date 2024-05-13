@@ -1,0 +1,18 @@
+{
+  "name": "@hc/app",
+  "version": "0.0.1",
+  "description": "日历、天气、日程、代办",
+  "productName": "荣耀日历",
+  "author": "smartzhao <zsqsmart@163.com>",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "lint": "eslint --ext .js,.ts,.vue ./",
+    "format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
+    "test": "echo \"No test specified\" && exit 0",
+    "dev": "quasar dev",
+    "build": "run-s build:*",
+    "build:spa": "quasar build",
+    "build:android": "quasar build -m capacitor -T android"
+  }
+}

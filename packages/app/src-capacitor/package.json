@@ -1,0 +1,13 @@
+{
+  "name": "@hc/app",
+  "version": "0.0.1",
+  "description": "日历、天气、日程、代办",
+  "author": "smartzhao <zsqsmart@163.com>",
+  "private": true,
+  "dependencies": {
+    "@capacitor/android": "^6.0.0",
+    "@capacitor/app": "^6.0.0",
+    "@capacitor/cli": "^6.0.0",
+    "@capacitor/core": "^6.0.0"
+  }
+}

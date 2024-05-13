@@ -1,0 +1,46 @@
+pnpm-lock.yaml
+
+# Editor directories and files
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+.thumbs.db
+
+# Package Manager
+node_modules
+.pnpm-debug.log*
+
+# System
+.DS_Store
+
+# Bundle
+dist
+coverage
+packages/element-plus/version.ts
+
+# local env files
+.env
+*.local
+.eslintcache
+cypress/screenshots/*
+cypress/videos/*
+tmp
+
+# Quasar core related directories
+.quasar
+quasar.config.*.temporary.compiled*
+
+# Cordova related directories and files
+src-cordova
+
+# Capacitor related directories and files
+src-capacitor
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+uploads/

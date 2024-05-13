@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "src",
+  "generateOptions": {
+    "spec": false,
+    "flat": true
+  },
+  "compilerOptions": {
+    "deleteOutDir": true,
+    "builder": "swc",
+    "typeCheck": true,
+    "watchAssets": true,
+    "assets": ["**/*.yaml", ".env"],
+    "tsConfigPath": "../../tsconfig.server.json"
+  }
+}

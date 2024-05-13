@@ -1,0 +1,25 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "jsx": "preserve",
+    "lib": ["ES2018", "DOM", "DOM.Iterable"]
+  },
+  "include": [
+    "packages/shared",
+    "packages/app",
+    "packages/server/**/typings",
+    "packages/server/**/typings.ts"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/dist",
+    "**/__tests__/**/*",
+    "**/tests/**/*",
+    "**/*.md",
+    "**/.quasar",
+    "**/src-capacitor",
+    "**/src-cordova",
+    "**/quasar.config.*.temporary.compiled*"
+  ]
+}
