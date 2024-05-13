@@ -3,15 +3,17 @@ import { RouteRecordRaw } from 'vue-router';
 const routes: RouteRecordRaw[] = [
   {
     path: '/',
-    component: () => import('layouts/MainLayout.vue'),
-    children: [{ path: '', component: () => import('pages/IndexPage.vue') }],
+    component: () => import('pages/home/index.vue'),
+    children: [
+      {
+        path: 'schedule',
+        component: () => import('pages/home/schedule/index.vue'),
+      },
+    ],
   },
-
-  // Always leave this as last one,
-  // but you can also remove it
   {
     path: '/:catchAll(.*)*',
-    component: () => import('pages/ErrorNotFound.vue'),
+    component: () => import('pages/error-not-found.vue'),
   },
 ];
 
