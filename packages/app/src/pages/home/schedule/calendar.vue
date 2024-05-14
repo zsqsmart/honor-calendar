@@ -1,40 +1,94 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import type { HolidayItem } from '@hc/app/utils/holiday';
+import { getHoliday } from '@hc/app/utils/holiday';
 import {
   addDays,
   endOfMonth,
   getDate,
   getDay,
   getDaysInMonth,
+  isSameDay,
+  isSameMonth,
   startOfMonth,
 } from 'date-fns';
 import lunisolar from 'lunisolar';
+import { ref, watch } from 'vue';
 
-const currentDate = ref(new Date());
-const weeks = ['一', '二', '三', '四', '五', '六', '七'];
+enum WorkStatusEnum {
+  EMPTY = '',
+  REST = '休',
+  WOKR = '班',
+}
+
 interface DayOption {
   // 公历
   gregorian: Date;
   // 农历
   lunar: lunisolar.Lunisolar;
+  // 国定假日
+  holiday: HolidayItem | null;
+  // 工作状态 > 空: 正常上下班, 休: 国定假日休息, 班: 国定假日补班
+  workStatus: WorkStatusEnum;
+  // 是否是今天
+  isToday: boolean;
+  // 是否被选中
+  isSelected: boolean;
+  // 是否在本月
+  isInThisMonth: boolean;
+  // TODO: 增加国内节日(七夕/建军建党...) 增加国际节日(母亲节/青年节...)
 }
-const dates = computed(() => {
-  const startDate = startOfMonth(currentDate.value);
-  const endDate = endOfMonth(currentDate.value);
-  const days = getDaysInMonth(currentDate.value);
-  //  如果是星期天, getDay 返回值为 0
-  const startWeek = getDay(startDate) || 7;
-  const endWeek = getDay(endDate);
-  const options: DayOption[] = [];
-  for (let i = 1 - startWeek; i <= days + 6 - endWeek; i++) {
-    const date = addDays(startDate, i);
-    options.push({
-      gregorian: date,
-      lunar: lunisolar(date),
-    });
-  }
-  return options;
-});
+
+const currentDate = ref(new Date());
+const dateOptions = ref<DayOption[]>([]);
+const weeks = ['一', '二', '三', '四', '五', '六', '七'];
+
+watch(
+  currentDate,
+  async (curDate) => {
+    const startDate = startOfMonth(curDate);
+    const endDate = endOfMonth(curDate);
+    const days = getDaysInMonth(curDate);
+    //  如果是星期天, getDay 返回值为 0
+    const startWeek = getDay(startDate) || 7;
+    const endWeek = getDay(endDate);
+    const options: DayOption[] = [];
+    let prevHolidayName = '';
+    for (let i = 1 - startWeek; i <= days + 6 - endWeek; i++) {
+      const date = addDays(startDate, i);
+      const lunar = lunisolar(date);
+      const holiday = await getHoliday(date);
+      let workStatus = WorkStatusEnum.EMPTY;
+      if (holiday) {
+        workStatus = holiday.isOffDay
+          ? WorkStatusEnum.REST
+          : WorkStatusEnum.WOKR;
+      }
+      options.push({
+        lunar,
+        workStatus,
+        // 5月 1 2 等 holiday.name 都是 劳动节, 只展示第一个就可以
+        holiday: prevHolidayName === holiday?.name ? null : holiday,
+        gregorian: date,
+        isToday: isSameDay(date, new Date()),
+        isSelected: isSameDay(date, curDate),
+        isInThisMonth: isSameMonth(date, curDate),
+      });
+      if (holiday) {
+        prevHolidayName = holiday.name;
+      }
+    }
+    dateOptions.value = options;
+  },
+  {
+    immediate: true,
+  },
+);
+
+const renderTitle = (option: DayOption) => {
+  const { holiday, lunar } = option;
+
+  return holiday?.name || lunar.solarTerm?.toString() || lunar.format('lD');
+};
 </script>
 
 <template>
@@ -43,7 +97,7 @@ const dates = computed(() => {
       <div
         v-for="week in weeks"
         :key="week"
-        class="text-center text-subtitle2"
+        class="text-center text-base"
         :style="{
           width: `${100 / 7}%`,
         }"
@@ -51,20 +105,99 @@ const dates = computed(() => {
         {{ week }}
       </div>
     </div>
-    <div class="row">
+    <div class="flex">
       <div
-        v-for="date in dates"
-        :key="date.gregorian.toUTCString()"
-        class="text-center text-subtitle2"
+        v-for="dateOption in dateOptions"
+        :key="dateOption.gregorian.toUTCString()"
+        :class="[
+          'text-center text-subtitle2 flex flex-col justify-center items-center',
+          {
+            'text-slate-300	': !dateOption.isInThisMonth,
+          },
+        ]"
         :style="{
           width: `${100 / 7}%`,
         }"
       >
-        <p>{{ getDate(date.gregorian) }}</p>
-        <p>{{ date.lunar.format('lD') }}</p>
+        <div
+          :class="[
+            'day',
+            {
+              'day-seleted': dateOption.isSelected,
+              'day-today': dateOption.isToday,
+            },
+          ]"
+          @click="currentDate = dateOption.gregorian"
+        >
+          <p class="text-lg">
+            <span class="relative">
+              <span class="text">{{ getDate(dateOption.gregorian) }}</span>
+              <span
+                :class="[
+                  'status',
+                  {
+                    'text-blue-500 text':
+                      dateOption.workStatus === WorkStatusEnum.REST,
+                    'text-rose-500':
+                      dateOption.workStatus === WorkStatusEnum.WOKR,
+                  },
+                ]"
+                >{{ dateOption.workStatus }}</span
+              >
+            </span>
+          </p>
+          <p
+            :class="[
+              'text',
+              'text-xs',
+              dateOption.isInThisMonth ? 'text-slate-500' : 'text-slate-300',
+            ]"
+          >
+            {{ renderTitle(dateOption) }}
+          </p>
+        </div>
+        <p class="schedule"></p>
       </div>
     </div>
   </div>
 </template>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.day {
+  width: 46px;
+  height: 46px;
+  border: 1px solid transparent;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.day-seleted {
+  border-color: $primary;
+}
+
+.day-today {
+  color: $primary;
+  .text {
+    color: $primary;
+    transition: all 0.2s;
+  }
+}
+.day-seleted.day-today {
+  background-color: $primary;
+  color: #ffffff;
+  .text {
+    color: #ffffff;
+  }
+}
+
+.status {
+  position: absolute;
+  right: 0;
+  transform: translateX(110%);
+  font-size: 10px;
+}
+
+.schedule {
+  height: 20px;
+}
+</style>

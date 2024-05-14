@@ -9,10 +9,11 @@
     "strict": true,
     "noUnusedLocals": true,
     "resolveJsonModule": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
-    "esModuleInterop": true,
     "removeComments": false,
     "rootDir": ".",
     "types": [],
@@ -20,9 +21,9 @@
     "noImplicitAny": false,
     "skipLibCheck": true,
     "paths": {
-      "@qi/app/*": ["packages/app/src/*"],
-      "@qi/server/*": ["packages/server/src/*"],
-      "@qi/shared/*": ["packages/shared/src/*"],
+      "@hc/app/*": ["packages/app/src/*"],
+      "@hc/server/*": ["packages/server/src/*"],
+      "@hc/shared/*": ["packages/shared/src/*"]
     }
   }
 }

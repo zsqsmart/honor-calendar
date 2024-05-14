@@ -127,15 +127,21 @@ module.exports = defineConfig({
       },
     },
     {
-      files: ['packages/server/**/*.ts'],
+      files: [''],
       rules: {
-        '@typescript-eslint/consistent-type-imports': 'off',
+        '@typescript-eslint/consistent-type-imports': 'error',
       },
     },
     {
       files: ['*.cjs'],
       rules: {
         '@typescript-eslint/no-var-requires': 'off',
+      },
+    },
+    {
+      files: ['**/*.ts'],
+      rules: {
+        '@typescript-eslint/consistent-type-imports': 'off',
       },
     },
   ],

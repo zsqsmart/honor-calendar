@@ -3,9 +3,10 @@
 // Configuration for your app
 // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js
 
-import { configure } from 'quasar/wrappers';
-import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+import { configure } from 'quasar/wrappers';
 
 export default configure((ctx) => {
   return {
@@ -57,9 +58,9 @@ export default configure((ctx) => {
       // polyfillModulePreload: true,
       // distDir
       alias: {
-        '@qi/app/': path.join(__dirname, './src/'),
-        '@qi/server/': path.join(__dirname, '../../packages/server/src/'),
-        '@qi/shared/': path.join(__dirname, '../../packages/shared/src/'),
+        '@hc/app/': path.join(__dirname, './src/'),
+        '@hc/server/': path.join(__dirname, '../../packages/server/src/'),
+        '@hc/shared/': path.join(__dirname, '../../packages/shared/src/'),
       },
       // extendViteConf (viteConf) {},
       // viteVuePluginOptions: {},
