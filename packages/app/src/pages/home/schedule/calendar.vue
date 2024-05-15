@@ -37,13 +37,20 @@ interface DayOption {
   isInThisMonth: boolean;
   // TODO: 增加国内节日(七夕/建军建党...) 增加国际节日(母亲节/青年节...)
 }
+const props = defineProps({
+  value: {
+    type: Date,
+    default: () => new Date(),
+  },
+});
 
-const currentDate = ref(new Date());
 const dateOptions = ref<DayOption[]>([]);
-const weeks = ['一', '二', '三', '四', '五', '六', '七'];
+const emit = defineEmits<{
+  change: [date: Date];
+}>();
 
 watch(
-  currentDate,
+  () => props.value,
   async (curDate) => {
     const startDate = startOfMonth(curDate);
     const endDate = endOfMonth(curDate);
@@ -92,72 +99,58 @@ const renderTitle = (option: DayOption) => {
 </script>
 
 <template>
-  <div>
-    <div class="row">
+  <div class="flex">
+    <div
+      v-for="dateOption in dateOptions"
+      :key="dateOption.gregorian.toUTCString()"
+      :class="[
+        'text-center text-subtitle2 flex flex-col justify-center items-center',
+        {
+          'text-slate-300	': !dateOption.isInThisMonth,
+        },
+      ]"
+      :style="{
+        width: `${100 / 7}%`,
+      }"
+    >
       <div
-        v-for="week in weeks"
-        :key="week"
-        class="text-center text-base"
-        :style="{
-          width: `${100 / 7}%`,
-        }"
-      >
-        {{ week }}
-      </div>
-    </div>
-    <div class="flex">
-      <div
-        v-for="dateOption in dateOptions"
-        :key="dateOption.gregorian.toUTCString()"
         :class="[
-          'text-center text-subtitle2 flex flex-col justify-center items-center',
+          'day',
           {
-            'text-slate-300	': !dateOption.isInThisMonth,
+            'day-seleted': dateOption.isSelected,
+            'day-today': dateOption.isToday,
           },
         ]"
-        :style="{
-          width: `${100 / 7}%`,
-        }"
+        @click="emit('change', dateOption.gregorian)"
       >
-        <div
+        <p class="text-lg">
+          <span class="relative">
+            <span class="text">{{ getDate(dateOption.gregorian) }}</span>
+            <span
+              :class="[
+                'status',
+                {
+                  'text-blue-500 text':
+                    dateOption.workStatus === WorkStatusEnum.REST,
+                  'text-rose-500':
+                    dateOption.workStatus === WorkStatusEnum.WOKR,
+                },
+              ]"
+              >{{ dateOption.workStatus }}</span
+            >
+          </span>
+        </p>
+        <p
           :class="[
-            'day',
-            {
-              'day-seleted': dateOption.isSelected,
-              'day-today': dateOption.isToday,
-            },
+            'text',
+            'text-xs',
+            dateOption.isInThisMonth ? 'text-slate-500' : 'text-slate-300',
           ]"
-          @click="currentDate = dateOption.gregorian"
         >
-          <p class="text-lg">
-            <span class="relative">
-              <span class="text">{{ getDate(dateOption.gregorian) }}</span>
-              <span
-                :class="[
-                  'status',
-                  {
-                    'text-blue-500 text':
-                      dateOption.workStatus === WorkStatusEnum.REST,
-                    'text-rose-500':
-                      dateOption.workStatus === WorkStatusEnum.WOKR,
-                  },
-                ]"
-                >{{ dateOption.workStatus }}</span
-              >
-            </span>
-          </p>
-          <p
-            :class="[
-              'text',
-              'text-xs',
-              dateOption.isInThisMonth ? 'text-slate-500' : 'text-slate-300',
-            ]"
-          >
-            {{ renderTitle(dateOption) }}
-          </p>
-        </div>
-        <p class="schedule"></p>
+          {{ renderTitle(dateOption) }}
+        </p>
       </div>
+      <p class="schedule"></p>
     </div>
   </div>
 </template>
