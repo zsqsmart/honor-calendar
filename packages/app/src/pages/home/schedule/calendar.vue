@@ -11,6 +11,7 @@ import {
   isSameMonth,
   startOfMonth,
 } from 'date-fns';
+import { last } from 'lodash-es';
 import lunisolar from 'lunisolar';
 import { ref, watch } from 'vue';
 
@@ -42,9 +43,25 @@ const props = defineProps({
     type: Date,
     default: () => new Date(),
   },
+  isExpaned: {
+    type: Boolean,
+  },
 });
 
-const dateOptions = ref<DayOption[]>([]);
+const dateOptionsGroup = ref<DayOption[][]>([]);
+const wrapper = ref<HTMLDivElement>();
+
+const groupDateOptions = (dateOptions: DayOption[]) => {
+  return dateOptions.reduce((memo, cur, index) => {
+    if (index % 7 === 0) {
+      memo.push([cur]);
+    } else {
+      last(memo)?.push(cur);
+    }
+    return memo;
+  }, [] as DayOption[][]);
+};
+
 const emit = defineEmits<{
   change: [date: Date];
 }>();
@@ -57,7 +74,7 @@ watch(
     const days = getDaysInMonth(curDate);
     //  如果是星期天, getDay 返回值为 0
     const startWeek = getDay(startDate) || 7;
-    const endWeek = getDay(endDate);
+    const endWeek = getDay(endDate) || 7;
     const options: DayOption[] = [];
     let prevHolidayName = '';
     for (let i = 1 - startWeek; i <= days + 6 - endWeek; i++) {
@@ -84,7 +101,7 @@ watch(
         prevHolidayName = holiday.name;
       }
     }
-    dateOptions.value = options;
+    dateOptionsGroup.value = groupDateOptions(options);
   },
   {
     immediate: true,
@@ -99,58 +116,80 @@ const renderTitle = (option: DayOption) => {
 </script>
 
 <template>
-  <div class="flex">
+  <div
+    ref="wrapper"
+    :class="[
+      'h-full',
+      {
+        'bg-white rounded-t-xl transition': props.isExpaned,
+      },
+    ]"
+  >
     <div
-      v-for="dateOption in dateOptions"
-      :key="dateOption.gregorian.toUTCString()"
+      v-for="(dateOptions, rowIndex) in dateOptionsGroup"
+      :key="dateOptions[0].gregorian.toString()"
       :class="[
-        'text-center text-subtitle2 flex flex-col justify-center items-center',
+        'flex pt-1 items-start',
         {
-          'text-slate-300	': !dateOption.isInThisMonth,
+          'border-b-1 border-slate-200':
+            props.isExpaned && rowIndex < dateOptionsGroup.length - 1,
         },
       ]"
       :style="{
-        width: `${100 / 7}%`,
+        height: `${100 / (dateOptionsGroup.length || 1)}%`,
       }"
     >
       <div
+        v-for="dateOption in dateOptions"
+        :key="dateOption.gregorian.toUTCString()"
         :class="[
-          'day',
+          'text-center text-subtitle2 flex flex-col justify-center items-center',
           {
-            'day-seleted': dateOption.isSelected,
-            'day-today': dateOption.isToday,
+            'text-slate-300	': !dateOption.isInThisMonth,
           },
         ]"
-        @click="emit('change', dateOption.gregorian)"
+        :style="{
+          width: `${100 / 7}%`,
+        }"
       >
-        <p class="text-lg">
-          <span class="relative">
-            <span class="text">{{ getDate(dateOption.gregorian) }}</span>
-            <span
-              :class="[
-                'status',
-                {
-                  'text-blue-500 text':
-                    dateOption.workStatus === WorkStatusEnum.REST,
-                  'text-rose-500':
-                    dateOption.workStatus === WorkStatusEnum.WOKR,
-                },
-              ]"
-              >{{ dateOption.workStatus }}</span
-            >
-          </span>
-        </p>
-        <p
+        <div
           :class="[
-            'text',
-            'text-xs',
-            dateOption.isInThisMonth ? 'text-slate-500' : 'text-slate-300',
+            'day',
+            {
+              'day-seleted': dateOption.isSelected,
+              'day-today': dateOption.isToday,
+            },
           ]"
+          @click="emit('change', dateOption.gregorian)"
         >
-          {{ renderTitle(dateOption) }}
-        </p>
+          <p class="text-lg">
+            <span class="relative">
+              <span class="text">{{ getDate(dateOption.gregorian) }}</span>
+              <span
+                :class="[
+                  'status',
+                  {
+                    'text-blue-500 text':
+                      dateOption.workStatus === WorkStatusEnum.REST,
+                    'text-rose-500':
+                      dateOption.workStatus === WorkStatusEnum.WOKR,
+                  },
+                ]"
+                >{{ dateOption.workStatus }}</span
+              >
+            </span>
+          </p>
+          <p
+            :class="[
+              'text text-xs truncate',
+              dateOption.isInThisMonth ? 'text-slate-500' : 'text-slate-300',
+            ]"
+          >
+            {{ renderTitle(dateOption) }}
+          </p>
+        </div>
+        <p class="schedule"></p>
       </div>
-      <p class="schedule"></p>
     </div>
   </div>
 </template>
