@@ -1,34 +1,16 @@
 <script setup lang="ts">
-import { addMonths, format } from 'date-fns';
-import { clamp } from 'lodash-es';
-import { dom, Screen, type TouchPanValue } from 'quasar';
+import { addMonths, differenceInDays, format, startOfMonth } from 'date-fns';
+import lunisolar from 'lunisolar';
+import { Screen, type TouchPanValue } from 'quasar';
 import { computed, ref } from 'vue';
 
 import Calendar from './calendar.vue';
+import ScheduleItem from './item.vue';
+import { CalendarShapeStatusEnum } from './typings';
 
 const weeks = ['一', '二', '三', '四', '五', '六', '日'];
 // 当前日期
 const currentDate = ref(new Date());
-// 当前展示的月份
-const currentIndex = ref(1);
-// 滑动偏移量百分数
-const offsetPercentX = ref(0);
-// 过渡动画开关
-const isTransition = ref(false);
-// 日历的高度
-const calendarHeight = ref(-1);
-// 华东区域元素
-const swipeWrapper = ref<HTMLElement>();
-// 滑动内部元素
-const swipeInner = ref<HTMLElement>();
-// 日历是否展开
-const isCalendarExpanded = ref(false);
-
-const computedCalendarHeight = computed(() => {
-  if (calendarHeight.value > 0) return `${calendarHeight.value}px`;
-  return isCalendarExpanded.value ? '100%' : 'auto';
-});
-
 // 扩充为三个月的数据,用于滑动展示
 const dates = computed(() => {
   return [
@@ -37,13 +19,41 @@ const dates = computed(() => {
     addMonths(currentDate.value, 1),
   ];
 });
+const DEFAULT_INDEX = Math.floor(dates.value.length / 2);
+// 当前展示的月份
+const currentIndex = ref(DEFAULT_INDEX);
+// 滑动偏移量百分数
+const offsetPercentX = ref(0);
+// 过渡动画开关
+const isTransition = ref(false);
+// 滑动区域元素
+const swipeContainer = ref<HTMLElement>();
+const calenderShapeStatus = ref<CalendarShapeStatusEnum>(
+  CalendarShapeStatusEnum.NORMAL,
+);
 
-let isPanningX = false;
+const resetState = () => {
+  currentDate.value = dates.value[currentIndex.value];
+  isTransition.value = false;
+  // 重置为1,这样就能保证 3 条数据无限循环
+  currentIndex.value = DEFAULT_INDEX;
+};
 
 // 开始滑动的时间, 用于判断是否是快速滑动
 let swipeStartTime = 0;
-const isFastSwipe = (distance: number) => {
+const isSwipeSuccess = (distance: number, maxDistance = 100) => {
+  if (distance >= maxDistance) return true;
   return Date.now() - swipeStartTime <= 300 && distance >= 30;
+};
+
+const getDayText = () => {
+  const texts = ['大前天', '前天', '昨天', '今天', '明天', '后天', '大后天'];
+
+  const diffDays = differenceInDays(currentDate.value, new Date());
+  const index = diffDays + texts.findIndex((text) => text === '今天');
+
+  if (texts[index]) return texts[index];
+  return `${Math.abs(diffDays)}${diffDays > 0 ? '天后' : '天前'}`;
 };
 
 // 左右滑动
@@ -53,6 +63,9 @@ const handlePanX: TouchPanValue = ({
   isFinal,
   isFirst,
 }) => {
+  if (currentIndex.value !== DEFAULT_INDEX) return;
+  // 滑动过程中关闭过渡, 结束时开启过渡
+  isTransition.value = !!isFinal;
   if (isFirst) {
     swipeStartTime = Date.now();
   }
@@ -60,89 +73,24 @@ const handlePanX: TouchPanValue = ({
   const x = Math.min(distance?.x || 0, maxWidth);
   if (!x) return;
   let sign = direction === 'left' ? 1 : -1;
-  // 滑动过程中关闭过渡
-  isTransition.value = false;
   offsetPercentX.value = ((sign * x) / maxWidth / dates.value.length) * 100;
   if (!isFinal) return;
-  isTransition.value = true;
-  offsetPercentX.value = 0;
+
   // 什么情况下切换
-  if (
-    // 滑动超过屏幕一半
-    x >= Screen.width / 2 ||
-    // 或快速左右滑动
-    isFastSwipe(x)
-  ) {
+  if (isSwipeSuccess(x, Screen.width / 2)) {
     // 切换月份时开启过渡动画
     currentIndex.value += sign;
-  }
-};
-
-let startHeight = 0;
-let minHeight = 0;
-// 上下滑动
-const handlePanY: TouchPanValue = ({
-  direction,
-  distance,
-  isFinal,
-  isFirst,
-}) => {
-  const y = distance?.y || 0;
-  if (!y) return;
-  const container = swipeInner.value;
-  if (!container) return;
-  let sign = direction === 'down' ? 1 : -1;
-  isTransition.value = false;
-  if (isFirst) {
-    swipeStartTime = Date.now();
-    startHeight = dom.height(container);
-    // 获取原始高度
-    container.style.height = 'auto';
-    minHeight = dom.height(container);
-    container.style.height = `${startHeight}px`;
-  }
-  const maxHeight = dom.height(swipeWrapper.value!);
-  calendarHeight.value = clamp(startHeight + sign * y, minHeight, maxHeight);
-  if (!isFinal) return;
-  isTransition.value = true;
-  // 什么情况下切换
-  if (
-    //  慢速滑动距离超过 100
-    y >= 100 ||
-    // 或快速上下滑动
-    isFastSwipe(y)
-  ) {
-    if (sign > 0) {
-      isCalendarExpanded.value = true;
-      calendarHeight.value = maxHeight;
-    } else {
-      isCalendarExpanded.value = false;
-      calendarHeight.value = minHeight;
+    // 直接滑动到终点,不会触发 transitionEnd
+    if (Math.abs(offsetPercentX.value) === 100 / dates.value.length) {
+      resetState();
     }
-  } else {
-    calendarHeight.value = startHeight;
   }
-};
-
-// 处理滑动
-const handlePan: TouchPanValue = (details) => {
-  if (details.isFirst && details.direction) {
-    isPanningX = ['right', 'left'].includes(details.direction);
-  }
-  if (isPanningX) {
-    handlePanX(details);
-  } else {
-    handlePanY(details);
-  }
+  offsetPercentX.value = 0;
 };
 
 // 过渡动画结束后,重置一些数据
 const handleSwipeTransitionEnd = () => {
-  currentDate.value = dates.value[currentIndex.value];
-  isTransition.value = false;
-  // 重置为1,这样就能保证 3 条数据无限循环
-  currentIndex.value = 1;
-  calendarHeight.value = -1;
+  resetState();
 };
 </script>
 
@@ -162,7 +110,7 @@ const handleSwipeTransitionEnd = () => {
       </div>
     </div>
     <!-- 星期 -->
-    <div class="flex px-1">
+    <div class="flex px-1" style="padding-left: 24px">
       <div
         v-for="week in weeks"
         :key="week"
@@ -176,34 +124,61 @@ const handleSwipeTransitionEnd = () => {
     </div>
     <!-- 滑动区域 -->
     <div
-      ref="swipeWrapper"
-      class="w-screen overflow-hidden flex-1"
-      v-touch-pan.prevent.mouse="handlePan"
+      class="w-screen h-full overflow-hidden flex-1"
+      v-touch-pan.horizontal.preserveCursor.capture.mouse="handlePanX"
     >
-      <div class="inline-block h-full">
-        <div
-          ref="swipeInner"
-          @transitionend="handleSwipeTransitionEnd"
-          :class="[
-            'flex flex-nowrap items-start',
-            {
-              'transition-all duration-300': isTransition,
-            },
-          ]"
-          :style="{
-            transform: `translateX(-${(100 / dates.length) * currentIndex + offsetPercentX}%)`,
-            height: computedCalendarHeight,
-          }"
+      <div
+        ref="swipeContainer"
+        @transitionend="handleSwipeTransitionEnd"
+        :class="[
+          'flex flex-nowrap items-start sticky h-full',
+          {
+            'transition-all': isTransition,
+            'bg-white rounded-t-xl':
+              CalendarShapeStatusEnum.EXPANED === calenderShapeStatus,
+            'bg-slate-50':
+              CalendarShapeStatusEnum.EXPANED !== calenderShapeStatus,
+          },
+        ]"
+        :style="{
+          transform: `translateX(-${(100 / dates.length) * currentIndex + offsetPercentX}%)`,
+          width: `${100 * dates.length}vw`,
+        }"
+      >
+        <ScheduleItem
+          v-for="(date, index) in dates"
+          :key="startOfMonth(date).toString()"
+          :calenderShapeStatus="calenderShapeStatus"
+          :index="index"
+          :onCalenderShapeStatusChange="
+            (status) => {
+              calenderShapeStatus = status;
+            }
+          "
         >
-          <Calendar
-            v-for="date in dates"
-            :key="date.toString()"
-            class="w-screen"
-            :value="date"
-            @change="(v) => (currentDate = v)"
-            :isExpaned="isCalendarExpanded"
-          />
-        </div>
+          <template #calendar>
+            <Calendar
+              class="w-screen"
+              :value="date"
+              @change="(v) => (currentDate = v)"
+              :isExpaned="
+                CalendarShapeStatusEnum.EXPANED === calenderShapeStatus
+              "
+            />
+          </template>
+          <template #schedule>
+            <div class="sticky top-0 z-1 bg-slate-50">
+              <span class="font-semibold inline-block mr-1">{{
+                getDayText()
+              }}</span>
+              <span> {{ lunisolar(date).format('lMlD') }}</span>
+            </div>
+            <div>没有日程 {{ startOfMonth(date).toString() }}</div>
+            <div v-for="i in 100" :key="i" class="bg-white ma-2 rounded">
+              日程-{{ i }}
+            </div>
+          </template>
+        </ScheduleItem>
       </div>
     </div>
   </div>

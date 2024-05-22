@@ -8,4 +8,13 @@ export default defineConfig({
     },
   },
   presets: [presetWind(), presetRemToPx],
+  rules: [
+    [
+      'text-xss',
+      {
+        'font-size': '0.625rem',
+        'line-height': '0.875rem',
+      },
+    ],
+  ],
 });

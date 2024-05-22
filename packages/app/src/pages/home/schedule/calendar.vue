@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { HolidayItem } from '@hc/app/utils/holiday';
+import type { HolidayItem } from '@hc/app/boot/holiday';
 import { getHoliday } from '@hc/app/utils/holiday';
 import {
   addDays,
@@ -7,6 +7,7 @@ import {
   getDate,
   getDay,
   getDaysInMonth,
+  getWeek,
   isSameDay,
   isSameMonth,
   startOfMonth,
@@ -68,7 +69,7 @@ const emit = defineEmits<{
 
 watch(
   () => props.value,
-  async (curDate) => {
+  (curDate) => {
     const startDate = startOfMonth(curDate);
     const endDate = endOfMonth(curDate);
     const days = getDaysInMonth(curDate);
@@ -80,7 +81,7 @@ watch(
     for (let i = 1 - startWeek; i <= days + 6 - endWeek; i++) {
       const date = addDays(startDate, i);
       const lunar = lunisolar(date);
-      const holiday = await getHoliday(date);
+      const holiday = getHoliday(date);
       let workStatus = WorkStatusEnum.EMPTY;
       if (holiday) {
         workStatus = holiday.isOffDay
@@ -116,23 +117,20 @@ const renderTitle = (option: DayOption) => {
 </script>
 
 <template>
-  <div
-    ref="wrapper"
-    :class="[
-      'h-full',
-      {
-        'bg-white rounded-t-xl transition': props.isExpaned,
-      },
-    ]"
-  >
+  <div ref="wrapper" class="px-1 h-full">
     <div
       v-for="(dateOptions, rowIndex) in dateOptionsGroup"
       :key="dateOptions[0].gregorian.toString()"
       :class="[
-        'flex pt-1 items-start',
+        'flex pt-1 items-start border-b-1',
+        props.isExpaned && rowIndex < dateOptionsGroup.length - 1
+          ? 'border-slate-200'
+          : 'border-transparent',
         {
-          'border-b-1 border-slate-200':
-            props.isExpaned && rowIndex < dateOptionsGroup.length - 1,
+          'sticky relative top-0 z-10': dateOptions.some(
+            (option) => option.isSelected,
+          ),
+          'bg-slate-50': !props.isExpaned,
         },
       ]"
       :style="{
@@ -140,10 +138,16 @@ const renderTitle = (option: DayOption) => {
       }"
     >
       <div
+        style="width: 24px; height: 28px; line-height: 28px"
+        class="text-slate-300 text-center"
+      >
+        {{ getWeek(dateOptions[0].gregorian) }}
+      </div>
+      <div
         v-for="dateOption in dateOptions"
         :key="dateOption.gregorian.toUTCString()"
         :class="[
-          'text-center text-subtitle2 flex flex-col justify-center items-center',
+          'flex-1 text-center text-subtitle2 flex flex-col justify-center items-center',
           {
             'text-slate-300	': !dateOption.isInThisMonth,
           },
@@ -167,7 +171,7 @@ const renderTitle = (option: DayOption) => {
               <span class="text">{{ getDate(dateOption.gregorian) }}</span>
               <span
                 :class="[
-                  'status',
+                  'status text-xss',
                   {
                     'text-blue-500 text':
                       dateOption.workStatus === WorkStatusEnum.REST,
@@ -181,7 +185,7 @@ const renderTitle = (option: DayOption) => {
           </p>
           <p
             :class="[
-              'text text-xs truncate',
+              'text text-xss truncate',
               dateOption.isInThisMonth ? 'text-slate-500' : 'text-slate-300',
             ]"
           >
@@ -225,7 +229,8 @@ const renderTitle = (option: DayOption) => {
 .status {
   position: absolute;
   right: 0;
-  transform: translateX(110%);
+  top: 50%;
+  transform: translate(110%, -66%);
   font-size: 10px;
 }
 
