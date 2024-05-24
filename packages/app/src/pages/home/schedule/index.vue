@@ -156,14 +156,13 @@ const handleSwipeTransitionEnd = () => {
             }
           "
         >
-          <template #calendar>
+          <template #calendar="{ movingDirection }">
             <Calendar
               class="w-screen"
               :value="date"
+              :movingDirection="movingDirection"
               @change="(v) => (currentDate = v)"
-              :isExpaned="
-                CalendarShapeStatusEnum.EXPANED === calenderShapeStatus
-              "
+              :shapeStatus="calenderShapeStatus"
             />
           </template>
           <template #schedule>

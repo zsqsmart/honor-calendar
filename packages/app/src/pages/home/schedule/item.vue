@@ -6,7 +6,8 @@ import { computed, onMounted, ref, watch } from 'vue';
 
 import { CalendarShapeStatusEnum } from './typings';
 
-const CALENDAR_ROW_HEIGHT = 71;
+// TODO: 改为动态获取
+const CALENDAR_ROW_HEIGHT = 67;
 
 const props = defineProps({
   calenderShapeStatus: {
@@ -26,7 +27,9 @@ const scheduleContainer = ref<HTMLDivElement>();
 const isTransition = ref(false);
 // 日历的高度
 const calendarHeight = ref(-1);
+// 日历原始高度
 const calendarOriginHeight = ref(0);
+const movingDirection = ref('');
 
 let swipeStartTime = 0;
 const isSwipeSuccess = (distance: number, maxDistance = 100) => {
@@ -44,6 +47,8 @@ const handlePanY: TouchPanValue = ({
   isFirst,
   evt,
 }) => {
+  movingDirection.value = direction || '';
+  if (isFinal) movingDirection.value = '';
   if (!isScheduleScrolledTop) return;
   // 滑动过程中关闭过渡, 结束时开启过渡
   isTransition.value = !!isFinal;
@@ -61,6 +66,7 @@ const handlePanY: TouchPanValue = ({
     calendarOriginHeight.value = dom.height(calendarEl);
     calendarEl.style.height = `${startHeight}px`;
   }
+
   if (
     props.calenderShapeStatus === CalendarShapeStatusEnum.NORMAL &&
     direction === 'up'
@@ -130,11 +136,13 @@ const computedCalendarHeight = computed(() => {
 });
 
 const updateIsScheduleScrolledTop = () => {
+  // TODO: scrollTop 会引起回流,更换一下
   isScheduleScrolledTop = scheduleContainer.value?.scrollTop === 0;
 };
 
 // 过渡动画结束后,重置一些数据
 const handleSwipeTransitionEnd = () => {
+  if (movingDirection.value) return;
   calendarHeight.value = -1;
   isTransition.value = false;
 };
@@ -200,11 +208,7 @@ watch(
 <template>
   <div
     ref="wrapper"
-    :class="{
-      'h-full overflow-y-scroll w-screen flex-shrink-0': true,
-      'transition-all': isTransition,
-    }"
-    :style="{}"
+    class="h-full overflow-y-scroll w-screen flex-shrink-0"
     v-touch-pan.vertical.preserveCursor.mouse="handlePanY"
   >
     <div class="h-full">
@@ -212,7 +216,7 @@ watch(
         ref="calendarWrapper"
         :class="{
           'sticky relative z-10': true,
-          'transition-all': isTransition,
+          'transition-height': isTransition,
         }"
         :style="{
           height: computedCalendarHeight,
@@ -220,7 +224,7 @@ watch(
         }"
         @transitionend="handleSwipeTransitionEnd"
       >
-        <slot name="calendar" />
+        <slot name="calendar" :movingDirection="movingDirection" />
       </div>
       <div
         class="overflow-y-scroll scroll-smooth"
