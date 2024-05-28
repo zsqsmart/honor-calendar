@@ -1,9 +1,9 @@
 // app global css in SCSS form
-
-* {
-  box-sizing: border-box;
-}
+@import 'animate.css';
+@import './animate.scss';
+@import './reset-quasar.scss';
 
 body {
   font-size: 14px;
+  overflow: hidden;
 }

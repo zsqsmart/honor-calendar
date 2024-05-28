@@ -1,12 +1,14 @@
 <script setup lang="ts">
-import { addMonths, differenceInDays, format, startOfMonth } from 'date-fns';
-import lunisolar from 'lunisolar';
+import { addMonths, format, startOfMonth } from 'date-fns';
 import { Screen, type TouchPanValue } from 'quasar';
 import { computed, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 import Calendar from './calendar.vue';
-import ScheduleItem from './item.vue';
+import ScheduleCol from './col.vue';
+import ScheduleList from './list.vue';
 import { CalendarShapeStatusEnum } from './typings';
+const router = useRouter();
 
 const weeks = ['一', '二', '三', '四', '五', '六', '日'];
 // 当前日期
@@ -44,16 +46,6 @@ let swipeStartTime = 0;
 const isSwipeSuccess = (distance: number, maxDistance = 100) => {
   if (distance >= maxDistance) return true;
   return Date.now() - swipeStartTime <= 300 && distance >= 30;
-};
-
-const getDayText = () => {
-  const texts = ['大前天', '前天', '昨天', '今天', '明天', '后天', '大后天'];
-
-  const diffDays = differenceInDays(currentDate.value, new Date());
-  const index = diffDays + texts.findIndex((text) => text === '今天');
-
-  if (texts[index]) return texts[index];
-  return `${Math.abs(diffDays)}${diffDays > 0 ? '天后' : '天前'}`;
 };
 
 // 左右滑动
@@ -149,7 +141,7 @@ const handleSwipeTransitionEnd = () => {
           width: `${100 * dates.length}vw`,
         }"
       >
-        <ScheduleItem
+        <ScheduleCol
           v-for="(date, index) in dates"
           :key="startOfMonth(date).toString()"
           :calenderShapeStatus="calenderShapeStatus"
@@ -170,19 +162,17 @@ const handleSwipeTransitionEnd = () => {
             />
           </template>
           <template #schedule>
-            <div class="sticky top-0 z-1 bg-slate-50">
-              <span class="font-semibold inline-block mr-1">{{
-                getDayText()
-              }}</span>
-              <span> {{ lunisolar(date).format('lMlD') }}</span>
-            </div>
-            <div>没有日程 {{ startOfMonth(date).toString() }}</div>
-            <div v-for="i in 100" :key="i" class="bg-white ma-2 rounded">
-              日程-{{ i }}
-            </div>
+            <ScheduleList :date="date" />
           </template>
-        </ScheduleItem>
+        </ScheduleCol>
       </div>
+    </div>
+    <div class="absolute bottom-8 right-2">
+      <q-btn
+        round
+        icon="eva-plus-outline"
+        @click="router.push('/schedule/editor')"
+      />
     </div>
   </div>
 </template>

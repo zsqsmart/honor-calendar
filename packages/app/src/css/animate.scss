@@ -1,0 +1,20 @@
+.slide-forward-enter {
+  transform: translate(100%);
+}
+.slide-forward-enter-active {
+  transition: all 0.3s ease-in-out;
+}
+.slide-forward-leave-active {
+  transform: translate(-100%);
+  transition: all 0.3s ease-in-out;
+}
+.slide-back-enter {
+  transform: translate(-100%);
+}
+.slide-back-enter-active {
+  transition: all 0.3s ease-in-out;
+}
+.slide-back-leave-active {
+  transform: translate(100%);
+  transition: all 0.3s ease-in-out;
+}
