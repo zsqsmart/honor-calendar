@@ -21,3 +21,17 @@ declare module '*.vue' {
   >;
   export default component;
 }
+
+declare interface Window {
+  _AMapSecurityConfig: any;
+}
+
+declare namespace AMap {
+  // https://lbs.amap.com/api/javascript-api-v2/guide/services/autocomplete#s0
+  // JS API 2.0 输入提示插件名称由AMap.Autocomplete变更为AMap.AutoComplete。
+  namespace AutoComplete {
+    export import Autocomplete = AMap.Autocomplete;
+  }
+
+  class AutoComplete extends AMap.Autocomplete {}
+}

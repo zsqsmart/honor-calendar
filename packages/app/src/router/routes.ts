@@ -9,6 +9,13 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: '/geo',
+    component: () => import('pages/geo/index.vue'),
+    meta: {
+      depth: 1,
+    },
+  },
+  {
     path: '/',
     component: () => import('pages/home/index.vue'),
     children: [

@@ -127,12 +127,6 @@ module.exports = defineConfig({
       },
     },
     {
-      files: [''],
-      rules: {
-        '@typescript-eslint/consistent-type-imports': 'error',
-      },
-    },
-    {
       files: ['*.cjs'],
       rules: {
         '@typescript-eslint/no-var-requires': 'off',

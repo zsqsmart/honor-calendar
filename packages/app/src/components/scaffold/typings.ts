@@ -1,11 +1,11 @@
 import { ExtractPropTypes } from 'vue';
 
 export const getScaffoldProps = () => ({
-  hideHeader: {
+  showHeader: {
     type: Boolean,
-    default: false,
+    default: true,
   },
-  hideFooter: {
+  showFooter: {
     type: Boolean,
     default: false,
   },

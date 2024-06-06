@@ -7,3 +7,12 @@ body {
   font-size: 14px;
   overflow: hidden;
 }
+
+// 高德地图 logo
+a.amap-logo {
+  display: none !important;
+}
+// 高德地图 copyright
+div.amap-copyright {
+  display: none !important;
+}

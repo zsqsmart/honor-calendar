@@ -1,21 +1,14 @@
 <script setup lang="ts">
-import { Geolocation } from '@capacitor/geolocation';
-import { onMounted, reactive, ref } from 'vue';
+import { reactive, ref } from 'vue';
+
+import { useGeoStore } from '../../geo/store';
+
+const geoStore = useGeoStore();
 
 const formData = reactive({
   title: '',
   isAllDay: false,
   desc: '',
-});
-
-const printCurrentPosition = async () => {
-  const coordinates = await Geolocation.getCurrentPosition();
-
-  console.log('Current position:', coordinates);
-};
-
-onMounted(() => {
-  printCurrentPosition();
 });
 
 const templateOptions = [
@@ -82,22 +75,23 @@ const currentType = ref('default');
         v-model="formData.title"
         placeholder="标题"
         bg-color="white"
-        standout="bg-teal text-white"
+        :standout="false"
       >
         <template #prepend>
           <q-icon name="eva-text-outline" />
         </template>
       </q-input>
       <q-btn
+        unelevated
         color="white"
         text-color="grey-7"
         icon-right="eva-chevron-right-outline"
         class="w-full"
         padding="8px 12px"
-        unelevated
+        to="/geo"
       >
         <q-icon name="eva-compass-outline" class="q-mr-xs" />
-        地点
+        {{ geoStore.info?.formattedAddress || '选择地点' }}
         <q-space />
       </q-btn>
       <!-- 日期选择 -->
@@ -169,7 +163,7 @@ const currentType = ref('default');
         autogrow
         placeholder="输入日程计划"
         bg-color="white"
-        standout="bg-teal text-white"
+        :standout="false"
       />
     </q-form>
   </hc-scaffold>

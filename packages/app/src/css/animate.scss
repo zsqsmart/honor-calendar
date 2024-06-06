@@ -1,20 +1,33 @@
+// 前进: 滑动进入
 .slide-forward-enter {
   transform: translate(100%);
 }
 .slide-forward-enter-active {
-  transition: all 0.3s ease-in-out;
+  transition: transform 0.3s ease-in-out;
 }
 .slide-forward-leave-active {
   transform: translate(-100%);
-  transition: all 0.3s ease-in-out;
+  transition: transform 0.3s ease-in-out;
 }
+// 后退: 滑动离开
 .slide-back-enter {
   transform: translate(-100%);
 }
 .slide-back-enter-active {
-  transition: all 0.3s ease-in-out;
+  transition: transform 0.3s ease-in-out;
 }
 .slide-back-leave-active {
   transform: translate(100%);
-  transition: all 0.3s ease-in-out;
+  transition: transform 0.3s ease-in-out;
+}
+
+.expand-y-enter-active,
+.expand-y-leave-active {
+  transform-origin: top center;
+  transition: transform 0.3s ease-in-out;
+}
+
+.expand-y-enter-from,
+.expand-y-leave-to {
+  transform: scaleY(0);
 }

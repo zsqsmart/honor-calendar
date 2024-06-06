@@ -16,7 +16,6 @@
     "experimentalDecorators": true,
     "removeComments": false,
     "rootDir": ".",
-    "types": [],
     "strictPropertyInitialization": false,
     "noImplicitAny": false,
     "skipLibCheck": true,

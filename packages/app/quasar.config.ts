@@ -107,7 +107,7 @@ export default configure((ctx) => {
       // directives: [],
 
       // Quasar plugins
-      plugins: [],
+      plugins: ['BottomSheet'],
     },
 
     // animations: 'all', // --- includes all animations

@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@amap/amap-jsapi-loader':
+        specifier: ^1.0.1
+        version: 1.0.1
       '@better-scroll/core':
         specifier: ^2.5.1
         version: 2.5.1
@@ -117,6 +120,18 @@ importers:
       '@swc/core':
         specifier: ^1.5.5
         version: 1.5.5
+      '@types/amap-js-api':
+        specifier: ^1.4.16
+        version: 1.4.16
+      '@types/amap-js-api-autocomplete':
+        specifier: ^1.4.4
+        version: 1.4.4
+      '@types/amap-js-api-geocoder':
+        specifier: ^1.4.4
+        version: 1.4.4
+      '@types/amap-js-api-place-search':
+        specifier: ^1.4.4
+        version: 1.4.4
       '@types/jest':
         specifier: ^29.5.12
         version: 29.5.12
@@ -221,6 +236,9 @@ importers:
   packages/shared: {}
 
 packages:
+
+  '@amap/amap-jsapi-loader@1.0.1':
+    resolution: {integrity: sha512-nPyLKt7Ow/ThHLkSvn2etQlUzqxmTVgK7bIgwdBRTg2HK5668oN7xVxkaiRe3YZEzGzfV2XgH5Jmu2T73ljejw==}
 
   '@ampproject/remapping@2.3.0':
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
@@ -1287,6 +1305,18 @@ packages:
 
   '@tsconfig/node16@1.0.4':
     resolution: {integrity: sha512-vxhUy4J8lyeyinH7Azl1pdd43GJhZH/tP2weN8TntQblOY+A0XbT8DJk1/oCPuOOyg/Ja757rG0CgHcWC8OfMA==}
+
+  '@types/amap-js-api-autocomplete@1.4.4':
+    resolution: {integrity: sha512-WJpF2/udyBmJ70czisbawAmgAao8if74eW0LLBwDy0iuRxJvXC7jRzonokyfA37TtnwMXSVuf8mv407Q5JbTjA==}
+
+  '@types/amap-js-api-geocoder@1.4.4':
+    resolution: {integrity: sha512-BH3bAHxiw3uZTAsHCRGB337TOggSYB4u0pVLTqrM5/ZX4Zu9o+SbAa8tLkQ9o+NJp35Q7PxCLX6jBaTcdhnCJg==}
+
+  '@types/amap-js-api-place-search@1.4.4':
+    resolution: {integrity: sha512-k+zWTEOLnjWGfwYmOWJv9zgZwVq+fMnpRrCTcPtWTgocDIJ/YWeWckdVl9+9zFN8Jxm47GReck/KO0qIuJv5wQ==}
+
+  '@types/amap-js-api@1.4.16':
+    resolution: {integrity: sha512-gfcEswuU4GNRdGAh74FhxfLlU6qxmVIJYPf3HV0uKucCWQ9iSr8TonDhqBvHVmmQEY60K+UAeIh0YLwKo/jpFQ==}
 
   '@types/babel__core@7.20.5':
     resolution: {integrity: sha512-qoQprZvz5wQFJwMDqeseRXWv3rqMvhgpbXFfVyWhbx9X47POIA6i/+dXefEmZKoAgOaTdaIgNSMqMIU61yRyzA==}
@@ -5282,6 +5312,8 @@ packages:
 
 snapshots:
 
+  '@amap/amap-jsapi-loader@1.0.1': {}
+
   '@ampproject/remapping@2.3.0':
     dependencies:
       '@jridgewell/gen-mapping': 0.3.5
@@ -6506,6 +6538,20 @@ snapshots:
   '@tsconfig/node14@1.0.3': {}
 
   '@tsconfig/node16@1.0.4': {}
+
+  '@types/amap-js-api-autocomplete@1.4.4':
+    dependencies:
+      '@types/amap-js-api': 1.4.16
+
+  '@types/amap-js-api-geocoder@1.4.4':
+    dependencies:
+      '@types/amap-js-api': 1.4.16
+
+  '@types/amap-js-api-place-search@1.4.4':
+    dependencies:
+      '@types/amap-js-api': 1.4.16
+
+  '@types/amap-js-api@1.4.16': {}
 
   '@types/babel__core@7.20.5':
     dependencies:
