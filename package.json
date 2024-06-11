@@ -25,6 +25,8 @@
   "dependencies": {
     "@amap/amap-jsapi-loader": "^1.0.1",
     "@better-scroll/core": "^2.5.1",
+    "@better-scroll/infinity": "^2.5.1",
+    "@better-scroll/wheel": "^2.5.1",
     "@capacitor/geolocation": "^6.0.0",
     "@nestjs/cli": "^10.0.0",
     "@nestjs/common": "^10.0.0",

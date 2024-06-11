@@ -15,13 +15,13 @@ export interface ScheduleModel {
   // 再次提醒时间间隔
   noticeInterval: number;
   // 重复提醒次数
-  noticeRepeat: number;
+  noticeRepeat?: number;
   // 描述
-  desc: string;
+  desc?: string;
   // 优先级
-  priority: PriorityEnum;
+  priority?: PriorityEnum;
   // 重复
-  repeat: string;
+  repeat?: string;
 }
 
 export enum PriorityEnum {

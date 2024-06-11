@@ -22,7 +22,7 @@ const getDayText = () => {
 };
 
 const scheduleList = computed(() => {
-  return ScheduleDB.getItemByTime(props.date);
+  return ScheduleDB.getSchedulesByTime(props.date);
 });
 </script>
 
@@ -44,11 +44,16 @@ const scheduleList = computed(() => {
     :key="schedule.id"
     class="bg-white ma-2 rounded"
   >
-    <div>
-      <div v-if="schedule.isAllDay">全天</div>
+    <div class="flex">
+      <div class="w-16 text-center">
+        <div v-if="schedule.isAllDay">全天</div>
+        <div v-else>
+          <p>{{ formatDate(schedule.startTime, 'HH:mm') }}</p>
+          <p>{{ formatDate(schedule.endTime, 'HH:mm') }}</p>
+        </div>
+      </div>
       <div>
-        <p>{{ formatDate(schedule.startTime, 'HH:mm') }}</p>
-        <p>{{ formatDate(schedule.endTime, 'HH:mm') }}</p>
+        {{ schedule.title }}
       </div>
     </div>
   </div>

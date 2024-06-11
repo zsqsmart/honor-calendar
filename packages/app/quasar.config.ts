@@ -89,7 +89,7 @@ export default configure((ctx) => {
     devServer: {
       // https: true
       open: true, // opens browser window automatically
-      port: ctx.mode.spa ? 8301 : ctx.mode.pwa ? 8302 : 8303,
+      port: 8301,
     },
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#framework
@@ -107,7 +107,7 @@ export default configure((ctx) => {
       // directives: [],
 
       // Quasar plugins
-      plugins: ['BottomSheet'],
+      plugins: ['BottomSheet', 'LocalStorage'],
     },
 
     // animations: 'all', // --- includes all animations

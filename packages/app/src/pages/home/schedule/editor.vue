@@ -1,14 +1,37 @@
 <script setup lang="ts">
+import DatePicker from '@hc/app/components/date-picker';
+import { smartFormatDate } from '@hc/app/utils/date';
+import ScheduleDB from '@hc/app/utils/schedule';
+import {
+  addHours,
+  addMinutes,
+  format,
+  getMinutes,
+  startOfHour,
+} from 'date-fns';
+import { nanoid } from 'nanoid';
 import { reactive, ref } from 'vue';
 
 import { useGeoStore } from '../../geo/store';
 
 const geoStore = useGeoStore();
+const now = new Date();
+const startTime = addMinutes(
+  startOfHour(now),
+  Math.ceil(getMinutes(now) / 30) * 30,
+);
+const endTime = addHours(startTime, 1);
+const datePickerVisible = ref(false);
+const modifyTimeMode = ref<'startTime' | 'endTime'>('startTime');
 
 const formData = reactive({
   title: '',
   isAllDay: false,
   desc: '',
+  startTime: startTime,
+  endTime: endTime,
+  noticeAdvance: '30m',
+  noticeInterval: 0,
 });
 
 const templateOptions = [
@@ -34,6 +57,28 @@ const templateOptions = [
   },
 ];
 const currentType = ref('default');
+
+const showTimePicker = (mode: 'startTime' | 'endTime') => {
+  modifyTimeMode.value = mode;
+  datePickerVisible.value = true;
+};
+const handleTimeChange = (time: Date) => {
+  if (modifyTimeMode.value === 'startTime') {
+    if (time.getTime() >= formData.endTime.getTime()) return;
+  } else {
+    if (time.getTime() <= formData.startTime.getTime()) return;
+  }
+  formData[modifyTimeMode.value] = time;
+};
+const handleOk = () => {
+  ScheduleDB.addSchedule({
+    ...formData,
+    id: nanoid(),
+    location: `${geoStore.lngLat?.getLng()},${geoStore.lngLat?.getLat()}`,
+    startTime: formData.startTime.toUTCString(),
+    endTime: formData.endTime.toUTCString(),
+  });
+};
 </script>
 
 <template>
@@ -42,7 +87,13 @@ const currentType = ref('default');
       <q-toolbar>
         <q-btn to="/schedule" flat round dense icon="eva-close-outline" />
         <q-toolbar-title>新建日程</q-toolbar-title>
-        <q-btn flat round dense icon="eva-checkmark-outline" />
+        <q-btn
+          flat
+          round
+          dense
+          icon="eva-checkmark-outline"
+          @click="handleOk"
+        />
       </q-toolbar>
     </template>
 
@@ -69,18 +120,21 @@ const currentType = ref('default');
       </div>
     </div>
     <q-form class="px-2 q-gutter-y-sm">
+      <!-- 标题 -->
       <q-input
         autofocus
         dense
+        borderless
         v-model="formData.title"
         placeholder="标题"
         bg-color="white"
         :standout="false"
       >
         <template #prepend>
-          <q-icon name="eva-text-outline" />
+          <q-icon name="eva-text-outline" class="px-3" />
         </template>
       </q-input>
+      <!-- 地点 -->
       <q-btn
         unelevated
         color="white"
@@ -91,7 +145,9 @@ const currentType = ref('default');
         to="/geo"
       >
         <q-icon name="eva-compass-outline" class="q-mr-xs" />
-        {{ geoStore.info?.formattedAddress || '选择地点' }}
+        <span class="">{{
+          geoStore.info?.formattedAddress || '选择地点'
+        }}</span>
         <q-space />
       </q-btn>
       <!-- 日期选择 -->
@@ -108,17 +164,20 @@ const currentType = ref('default');
             <q-toggle v-model="formData.isAllDay" />
           </div>
           <q-separator class="mb-1" />
-          <div class="flex justify-around items-center">
-            <div class="text-center">
-              <div>15:30</div>
-              <div>5月 15 日</div>
+          <div class="flex items-center">
+            <div
+              class="text-center flex-1"
+              @click="showTimePicker('startTime')"
+            >
+              <div>{{ format(formData.startTime, 'HH:mm') }}</div>
+              <div>{{ smartFormatDate(formData.startTime) }}</div>
             </div>
             <div>
               <q-icon size="24px" name="eva-chevron-right-outline" />
             </div>
-            <div class="text-center">
-              <div>18:30</div>
-              <div>5月 15 日</div>
+            <div class="text-center flex-1" @click="showTimePicker('endTime')">
+              <div>{{ format(formData.endTime, 'HH:mm') }}</div>
+              <div>{{ smartFormatDate(formData.endTime) }}</div>
             </div>
           </div>
         </div>
@@ -164,8 +223,14 @@ const currentType = ref('default');
         placeholder="输入日程计划"
         bg-color="white"
         :standout="false"
+        input-class="px-3"
       />
     </q-form>
+    <DatePicker
+      :currentTime="formData[modifyTimeMode]"
+      v-model="datePickerVisible"
+      @ok="handleTimeChange"
+    />
   </hc-scaffold>
 </template>
 

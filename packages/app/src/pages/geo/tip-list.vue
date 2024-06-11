@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { GeoInfo } from '@hc/app/typings/geo';
 import type { PropType } from 'vue';
-import { defineEmits, defineProps } from 'vue';
 
 const props = defineProps({
   tips: {
